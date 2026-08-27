@@ -40,8 +40,187 @@
 // }
 // -------------ข้อ3----------------------
 
+// #include "freertos/FreeRTOS.h"
+// #include "freertos/task.h"
+// #include "esp_log.h"
+// #include <driver/gpio.h>
+// #include <stdio.h>
+// #include "driver/ledc.h"
+// #include "esp_err.h"
+// #include "sdkconfig.h"
+// #include "esp_pm.h"
+// #include <esp_adc/adc_oneshot.h>
+// #include <freertos/FreeRTOS.h>
+// #include <freertos/task.h>
+// #include "esp_log.h"
+// #include <esp_timer.h>
+
+// #define ADC_PIN ADC_CHANNEL_7
+// #define ADC_UNIT ADC_UNIT_1
+// #define ADC_BITWIDTH ADC_BITWIDTH_10
+// #define ADC_ATTEN ADC_ATTEN_DB_12
+
+// #define LEDC_TIMER LEDC_TIMER_0
+// #define LEDC_MODE LEDC_LOW_SPEED_MODE
+// #define LEDC_OUTPUT_IO 23
+// #define LEDC_CHANNEL LEDC_CHANNEL_6
+// #define LEDC_DUTY_RES LEDC_TIMER_8_BIT
+// #define LEDC_DUTY 2048
+// #define LEDC_CLK_SRC LEDC_APB_CLK
+// #define LEDC_FREQUENCY 1820
+// gpio_num_t LED1 = (gpio_num_t)2;
+// gpio_num_t LED3 = (gpio_num_t)22;
+// int adc_value;
+// adc_oneshot_unit_handle_t adc_handle;
+// bool suspendmain = false;
+// TaskHandle_t blinkLEDHandle = NULL;
+// TaskHandle_t ledStateHandle = NULL;
+// TaskHandle_t led3BlinkHandle = NULL;
+// void config_led(void)
+// {
+//     gpio_reset_pin(LED1);
+//     gpio_set_direction(LED1, GPIO_MODE_INPUT_OUTPUT);
+//     gpio_reset_pin(LED3);
+//     gpio_set_direction(LED3, GPIO_MODE_INPUT_OUTPUT);
+// }
+
+// void config_interrupts()(void)
+// {
+//     button_queue = xQueueCreate(10, sizeof(bool));
+//     gpio_config_t io_conf = {.intr_type = GPIO_INTR_POSEDGE,
+//                              .mode = GPIO_MODE_INPUT,
+//                              .pin_bit_mask = (1ULL << BUTTON_GPIO),
+//                              .pull_down_en = GPIO_PULLDOWN_DISABLE,
+//                              .pull_up_en = GPIO_PULLUP_ENABLE};
+//     gpio_config(&io_conf);
+//     gpio_install_isr_service(0);
+//     gpio_isr_handler_add(BUTTON_GPIO, button_isr, NULL);
+    
+// }
+// void config_adc()
+// {
+//     adc_oneshot_unit_init_cfg_t init_config = {
+//         .unit_id = ADC_UNIT,
+//         .clk_src = ADC_RTC_CLK_SRC_DEFAULT,
+//     };
+//     ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config, &adc_handle));
+//     adc_oneshot_chan_cfg_t config = {
+//         .bitwidth = ADC_BITWIDTH,
+//         .atten = ADC_ATTEN,
+//     };
+//     ESP_ERROR_CHECK(adc_oneshot_config_channel(adc_handle, ADC_PIN, &config));
+// }
+// void config_ledc(void)
+// {
+//     ledc_timer_config_t ledc_timer = {
+//         .speed_mode = LEDC_MODE,
+//         .duty_resolution = LEDC_DUTY_RES,
+//         .timer_num = LEDC_TIMER,
+//         .freq_hz = LEDC_FREQUENCY,
+//         .clk_cfg = LEDC_CLK_SRC,
+//     };
+//     ESP_ERROR_CHECK(ledc_timer_config(&ledc_timer));
+//     ledc_channel_config_t ledc_channel = {
+//         .speed_mode = LEDC_MODE,
+//         .channel = LEDC_CHANNEL,
+//         .timer_sel = LEDC_TIMER,
+//         .gpio_num = LEDC_OUTPUT_IO,
+//         .duty = 0,
+//         .hpoint = 0,
+//     };
+//     ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
+// }
+// void blinkLED(void *pvParameters)
+// {
+//     while (1)
+//     {
+//         gpio_set_level(LED1, !gpio_get_level(LED1));
+//         vTaskDelay(600 / portTICK_PERIOD_MS);
+//     }
+// }
+// void ledState(void *pvParameters)
+// {
+//     while (1)
+//     {
+//         int ledstatus = gpio_get_level(LED1);
+//         if (ledstatus == 1)
+//         {
+//             ESP_LOGI("LED1", "ON");
+//         }
+//         if (ledstatus == 0)
+//         {
+//             ESP_LOGI("LED1", "OFF");
+//         }
+//         vTaskDelay(1000 / portTICK_PERIOD_MS);
+//     }
+// }
+// void getAdcGenPwm(void *pvParameters)
+// {
+//     while (1)
+//     {
+//         ESP_ERROR_CHECK(adc_oneshot_read(adc_handle, ADC_PIN, &adc_value));
+//         ESP_LOGI("ADC", "Value: %d", adc_value);
+//         float duty_data = (511 * (adc_value / 1023.0));
+
+//         ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, duty_data));
+//         ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, LEDC_CHANNEL));
+
+//         vTaskDelay(500 / portTICK_PERIOD_MS);
+//     }
+// }
+// void led3Blink(void *PvPara)
+// {
+//     while (1)
+//     {
+//         gpio_set_level(LED3, 1);
+//         vTaskDelay(260 / portTICK_PERIOD_MS); // 0.26 วินาที
+//         gpio_set_level(LED3, 0);
+//         vTaskDelay(260 / portTICK_PERIOD_MS);
+//     }
+// }
+// void app_main(void)
+// {
+//     config_led();
+//     config_adc();
+//     config_ledc();
+//     config_interrupts();
+//     xTaskCreatePinnedToCore(blinkLED, "blink led", 512, NULL, 3, &blinkLEDHandle, 1);
+//     xTaskCreatePinnedToCore(ledState, "สถานะled1", 2048, NULL, 1, &ledStateHandle, 1);
+//     xTaskCreatePinnedToCore(getAdcGenPwm, "สถานะled1", 2048, NULL, 1, NULL, 1);
+//     xTaskCreatePinnedToCore(led3Blink, "สถานะled3", 2048, NULL, 1,&led3BlinkHandle, 1);
+//     uint32_t button_counter;
+//     bool StateSw = false; // สถานะ Toggle
+
+//     while (1)
+//     {
+//         if (xQueueReceive(button_queue, &button_counter, portMAX_DELAY))
+//         {
+//             StateSw = !StateSw; // สลับสถานะเมื่อกดปุ่ม
+
+//             if (StateSw)
+//             {
+//                 vTaskSuspend(blinkLEDHandle);
+//                 vTaskSuspend(ledStateHandle);
+//                 vTaskSuspend(led3BlinkHandle);
+
+//                 gpio_set_level(LED3, 1);
+//             }
+//             else
+//             {
+//                 vTaskResume(blinkLEDHandle);
+//                 vTaskResume(ledStateHandle);
+//                 vTaskResume(led3BlinkHandle);
+//             }
+//         }
+//     }
+// }
+
+
+
+//-------------ข้อe-----------------
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/queue.h"
 #include "esp_log.h"
 #include <driver/gpio.h>
 #include <stdio.h>
@@ -50,9 +229,6 @@
 #include "sdkconfig.h"
 #include "esp_pm.h"
 #include <esp_adc/adc_oneshot.h>
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-#include "esp_log.h"
 #include <esp_timer.h>
 
 #define ADC_PIN ADC_CHANNEL_7
@@ -68,11 +244,29 @@
 #define LEDC_DUTY 2048
 #define LEDC_CLK_SRC LEDC_APB_CLK
 #define LEDC_FREQUENCY 1820
+
+#define BUTTON_GPIO 4
+
 gpio_num_t LED1 = (gpio_num_t)2;
 gpio_num_t LED3 = (gpio_num_t)22;
 int adc_value;
 adc_oneshot_unit_handle_t adc_handle;
 bool suspendmain = false;
+
+TaskHandle_t blinkLEDHandle = NULL;
+TaskHandle_t ledStateHandle = NULL;
+TaskHandle_t led3BlinkHandle = NULL;
+QueueHandle_t button_queue = NULL;
+
+static void IRAM_ATTR button_isr(void *arg)
+{
+    uint32_t gpio_num = (uint32_t)arg;
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    xQueueSendFromISR(button_queue, &gpio_num, &xHigherPriorityTaskWoken);
+    if (xHigherPriorityTaskWoken) {
+        portYIELD_FROM_ISR();
+    }
+}
 
 void config_led(void)
 {
@@ -82,19 +276,21 @@ void config_led(void)
     gpio_set_direction(LED3, GPIO_MODE_INPUT_OUTPUT);
 }
 
-void config_interrupts()(void)
+void config_interrupts(void)
 {
-    button_queue = xQueueCreate(10, sizeof(bool));
-    gpio_config_t io_conf = {.intr_type = GPIO_INTR_POSEDGE,
-                             .mode = GPIO_MODE_INPUT,
-                             .pin_bit_mask = (1ULL << BUTTON_GPIO),
-                             .pull_down_en = GPIO_PULLDOWN_DISABLE,
-                             .pull_up_en = GPIO_PULLUP_ENABLE};
+    button_queue = xQueueCreate(10, sizeof(uint32_t));
+    gpio_config_t io_conf = {
+        .intr_type = GPIO_INTR_POSEDGE,
+        .mode = GPIO_MODE_INPUT,
+        .pin_bit_mask = (1ULL << BUTTON_GPIO),
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .pull_up_en = GPIO_PULLUP_ENABLE
+    };
     gpio_config(&io_conf);
     gpio_install_isr_service(0);
-    gpio_isr_handler_add(BUTTON_GPIO, button_isr, NULL);
-    
+    gpio_isr_handler_add(BUTTON_GPIO, button_isr, (void *)BUTTON_GPIO);
 }
+
 void config_adc()
 {
     adc_oneshot_unit_init_cfg_t init_config = {
@@ -108,6 +304,7 @@ void config_adc()
     };
     ESP_ERROR_CHECK(adc_oneshot_config_channel(adc_handle, ADC_PIN, &config));
 }
+
 void config_ledc(void)
 {
     ledc_timer_config_t ledc_timer = {
@@ -128,6 +325,7 @@ void config_ledc(void)
     };
     ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
 }
+
 void blinkLED(void *pvParameters)
 {
     while (1)
@@ -136,6 +334,7 @@ void blinkLED(void *pvParameters)
         vTaskDelay(600 / portTICK_PERIOD_MS);
     }
 }
+
 void ledState(void *pvParameters)
 {
     while (1)
@@ -152,6 +351,7 @@ void ledState(void *pvParameters)
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
+
 void getAdcGenPwm(void *pvParameters)
 {
     while (1)
@@ -166,23 +366,53 @@ void getAdcGenPwm(void *pvParameters)
         vTaskDelay(500 / portTICK_PERIOD_MS);
     }
 }
+
+void led3Blink(void *PvPara)
+{
+    while (1)
+    {
+        gpio_set_level(LED3, 1);
+        vTaskDelay(260 / portTICK_PERIOD_MS); // 0.26 วินาที
+        gpio_set_level(LED3, 0);
+        vTaskDelay(260 / portTICK_PERIOD_MS);
+    }
+}
+
 void app_main(void)
 {
     config_led();
     config_adc();
     config_ledc();
     config_interrupts();
-    xTaskCreatePinnedToCore(blinkLED, "blink led", 512, NULL, 3, NULL, 1);
-    xTaskCreatePinnedToCore(ledState, "สถานะled1", 2048, NULL, 1, NULL, 1);
-    xTaskCreatePinnedToCore(getAdcGenPwm, "สถานะled1", 2048, NULL, 1, NULL, 1);
-    xTaskCreatePinnedToCore(led3Blink, "สถานะled3", 2048, NULL, 1, NULL, 1);
-      while (1)    {       
-         if (xQueueReceive(button_queue, &suspendmain, portMAX_DELAY))        
-         {            
-            ESP_LOGI("Button Counter", "Button pressed %lu times.", button_counter);        
-        }    
+    
+    xTaskCreatePinnedToCore(blinkLED, "blink led", 2048, NULL, 3, &blinkLEDHandle, 1);
+    xTaskCreatePinnedToCore(ledState, "สถานะled1", 2048, NULL, 1, &ledStateHandle, 1);
+    xTaskCreatePinnedToCore(getAdcGenPwm, "สถานะadc", 2048, NULL, 1, NULL, 1);
+    xTaskCreatePinnedToCore(led3Blink, "สถานะled3", 2048, NULL, 1, &led3BlinkHandle, 1);
+    
+    uint32_t button_counter;
+    bool StateSw = false; // สถานะ Toggle
+
+    while (1)
+    {
+        if (xQueueReceive(button_queue, &button_counter, portMAX_DELAY))
+        {
+            StateSw = !StateSw; // สลับสถานะเมื่อกดปุ่ม
+
+            if (StateSw)
+            {
+                vTaskSuspend(blinkLEDHandle);
+                vTaskSuspend(ledStateHandle);
+                vTaskSuspend(led3BlinkHandle);
+
+                gpio_set_level(LED3, 1); // LED3 ติดค้าง
+            }
+            else
+            {
+                vTaskResume(blinkLEDHandle);
+                vTaskResume(ledStateHandle);
+                vTaskResume(led3BlinkHandle); // LED3 กลับมากระพริบ
+            }
+        }
     }
 }
-
-
-
